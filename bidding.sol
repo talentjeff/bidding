@@ -14,7 +14,6 @@ contract Bidding {
     Indicator[] tempIndicator;
 
     struct RFQ { // request for qutation
-        // string companyName;
         address owner;
         string productName;
         address[] suppliersEnroll;
@@ -25,17 +24,7 @@ contract Bidding {
         mapping (address => Supplier) suppliers;
         Indicator[] indicators;
         uint256[] priceScoreList;
-        //SupplierIndicatorScore[] finalCompareList;
         address winner;
-        // Supplier[] suppliers;
-        // uint256 quality;
-        // string unit;
-        // string standardSpecification;
-        // string paymentMethod;
-        // uint256 estimatedArrivalTime;
-        // uint256 enrollmentDeadline;
-        // uint256 minBiddersNumber;
-        // uint256 depositOfSupplier;
     }
 
     struct Supplier {
@@ -108,15 +97,9 @@ contract Bidding {
             request.indicators[i].unit = indicatorUnit[i];
             request.indicators[i].high2low = indicatorHigh2low[i];
             request.indicators[i].scoreReady = false;
-            //newIndicator.name = indicatorName[i];
-            //newIndicator.unit = indicatorUnit[i];
-            //newIndicator.high2low = indicatorHigh2low[i];
-            //newIndicator.scoreReady = false;
-            //request.indicators.push(newIndicator);
         }
     }
 
-    // We don't want createRFQ and setScoreList seperately, But conflux studio has bug in pass Indicator[] as parameter
     function setScoreList(uint256 requestID, uint256 indicatorIndex, uint256[] calldata scoreList) public {
         require(msg.sender == Requests[requestID].owner, "unauthorized");
         for(uint i = 0; i < scoreList.length; i++) {
@@ -160,6 +143,7 @@ contract Bidding {
         Requests[requestID].suppliers[msg.sender].priceAnnounced = true;
     }
     
+    // considering calculation on chain will cost a lot, we put price validation on the cloud side
     function buyerConfirmValidSuppliers(uint256 requestID, address[] calldata suppliers) public {
         require(msg.sender == Requests[requestID].owner, "unauthorized");
         for (uint i = 0; i < suppliers.length; i++) {
@@ -169,6 +153,8 @@ contract Bidding {
         }
     }
 
+    // considering calculation on chain will cost a lot, we put this calculation on the cloud side
+    /*
     function compareScore(uint256 requestID) public {
         // prepare finalSuppliersValue
         address[] memory suppliersValid = Requests[requestID].suppliersValid;
@@ -185,7 +171,6 @@ contract Bidding {
         // calculate score
         for (uint j = 0; j < tempIndicator.length; j++) {
             //sortIndicator(tempIndicator[j].finalSuppliersValue);
-            /*
             uint256 numberSupplierGotScore;
             if (tempIndicator[j].finalSuppliersValue.length >= tempIndicator[j].scoreList.length) {
                 numberSupplierGotScore = tempIndicator[j].scoreList.length;
@@ -201,10 +186,8 @@ contract Bidding {
                     Requests[requestID].suppliers[supplierAddres].totalScore += tempIndicator[j].scoreList[i];
                 }
             }
-            */
         }
         // find winner
-        /*
         Supplier memory winnerSupplier;
         address winnerAddress;
         for (uint i = 0; i < suppliersValid.length; i++) {
@@ -213,16 +196,17 @@ contract Bidding {
                 winnerAddress = suppliersValid[i];
             }
         }
-        */
     }
+    */
 
-    function generateWinner(uint256 requestID) public {
+    function confirmWinner(uint256 requestID, address winner) public {
         require(msg.sender == Requests[requestID].owner, "unauthorized");
+        Requests[requestID].winner = winner;
     }
 
     // getters
-    function showWinner(uint256 requestNumber) external view returns (address) {
-        return Requests[requestNumber].winner;
+    function showWinner(uint256 requestID) external view returns (address) {
+        return Requests[requestID].winner;
     }
 
     function showSupplierTotalsore(uint256 requestNumber, address supplier) external view returns (uint256) {
